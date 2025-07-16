@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wyse Investments Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      color: #333;
+    }
+    header {
+      background-color: #2e4d2f;
+      color: #fff;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .logo {
+      max-height: 80px;
+      margin-bottom: 1rem;
+    }
+    .container {
+      padding: 2rem;
+      max-width: 960px;
+      margin: auto;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    .record {
+      border-bottom: 1px solid #eee;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+    }
+    strong {
+      display: inline-block;
+      width: 150px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" class="logo" alt="Wyse Logo"/>
+    <h1>Wyse Investments</h1>
+  </header>
+  <div class="container">
+    <div class="card" id="recommendations">
+      <h2>📊 Stock Recommendations</h2>
+      <div id="recommendation-list">Loading...</div>
+    </div>
+    <div class="card" id="trades">
+      <h2>📈 Trade History</h2>
+      <div id="trade-list">Loading...</div>
+    </div>
+  </div>
+  <script>
+    window.onload = () => {
+      const supabase = supabase.createClient(
+        'https://omoueblwzqaqtoebsoub.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tb3VlYmx3enFhcXRvZWJzb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODQyMzIsImV4cCI6MjA2NjI2MDIzMn0.m-_U35A86hoFWVdbuAa8Wsp82UtK2PEFGQLtMRDNGmk'
+      );
+
+      async function loadRecommendations() {
+        const { data, error } = await supabase
+          .from('trade_recommendations')
+          .select('*')
+          .order('date', { ascending: false });
+
+        const container = document.getElementById('recommendation-list');
+        container.innerHTML = '';
+
+        if (error) {
+          container.textContent = 'Error loading data.';
+          return;
+        }
+
+        data.forEach(rec => {
+          container.innerHTML += `
+            <div class="record">
+              <strong>Symbol:</strong> ${rec.symbol}<br />
+              <strong>Recommendation:</strong> ${rec.recommendation}<br />
+              <strong>Target Price:</strong> $${rec.target_price}<br />
+              <strong>Current Price:</strong> $${rec.current_price}<br />
+              <strong>Date:</strong> ${rec.date}
+            </div>
+          `;
+        });
+      }
+
+      async function loadTrades() {
+        const { data, error } = await supabase
+          .from('user_trades')
+          .select('*')
+          .order('trade_date', { ascending: false });
+
+        const container = document.getElementById('trade-list');
+        container.innerHTML = '';
+
+        if (error) {
+          container.textContent = 'Error loading trades.';
+          return;
+        }
+
+        data.forEach(trade => {
+          container.innerHTML += `
+            <div class="record">
+              <strong>Date:</strong> ${trade.trade_date}<br />
+              <strong>Symbol:</strong> ${trade.stock_symbol}<br />
+              <strong>Type:</strong> ${trade.trade_type}<br />
+              <strong>Amount:</strong> ${trade.amount}<br />
+              <strong>Price:</strong> $${trade.price}
+            </div>
+          `;
+        });
+      }
+
+      loadRecommendations();
+      loadTrades();
+    }
+  </script>
+</body>
+</html>
